@@ -12,6 +12,7 @@
 			'url' => Yii::app()->createUrl("site/upload", array("parent_id" => 1)),
 			'model' => $model,
 			'attribute' => 'file',
+			'multiple' => true,
 		));
 		?>
     <br>

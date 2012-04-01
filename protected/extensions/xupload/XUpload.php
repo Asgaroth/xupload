@@ -77,11 +77,11 @@ class XUpload extends CJuiInputWidget {
         $htmlOptions = array();
         if ($this -> multiple) {
             $htmlOptions["multiple"] = true;
-            if($this->hasModel()){
+           /* if($this->hasModel()){
                 $this -> attribute = "[]" . $this -> attribute;
             }else{
                 $this -> attribute = "[]" . $this -> name;
-            }
+            }*/
         }
         $this -> render("form", compact('htmlOptions'));
     }
@@ -97,7 +97,7 @@ class XUpload extends CJuiInputWidget {
             //@ALEXTODO make ui interface optional
             Yii::app() -> clientScript -> registerCssFile($baseUrl . '/css/jquery.fileupload-ui.css');
             //The Iframe Transport is required for browsers without support for XHR file uploads
-            Yii::app() -> clientScript -> registerScriptFile($baseUrl . 'js/jquery.iframe-transport.js', CClientScript::POS_END);
+            Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/jquery.iframe-transport.js', CClientScript::POS_END);
             // The basic File Upload plugin
             Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/jquery.fileupload.js', CClientScript::POS_END);
             // The File Upload image processing plugin

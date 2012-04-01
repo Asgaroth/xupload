@@ -3,7 +3,7 @@ Yii::import("xupload.models.XUploadForm");
 class SiteController extends Controller {
 
 	public function actions() {
-		return array('upload' => array('class' => 'xupload.actions.XUploadAction', 'subfolderVar' => 'parent_id', 'path' => realpath(Yii::app() -> getBasePath() . "/../images/uploads"), ), );
+		return array('upload' => array('class' => 'xupload.actions.XUploadAction', 'path' => Yii::app() -> getBasePath() . "/../images/uploads", "publicPath" => Yii::app()->getBaseUrl()."/images/uploads" ), );
 	}
 
 	/**
@@ -15,22 +15,6 @@ class SiteController extends Controller {
 		// using the default layout 'protected/views/layouts/main.php'
 		$model = new XUploadForm;
 		$this -> render('index', array('model' => $model, ));
-	}
-
-	/**
-	 * Single queued file upload
-	 */
-	public function actionQueue() {
-		$model = new XUploadForm;
-		$this -> render('queue', array('model' => $model, ));
-	}
-
-	/**
-	 * Single queued file upload
-	 */
-	public function actionMultiple() {
-		$model = new XUploadForm;
-		$this -> render('multiple', array('model' => $model, ));
 	}
 
 	/**
