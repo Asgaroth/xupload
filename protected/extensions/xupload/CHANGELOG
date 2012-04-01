@@ -1,0 +1,13 @@
+##Changelog
+
+#### V 0.2 Sun May 8 19:28:43 COT 2011
+
+- Added Multiple file uploading functionality
+- Integrated XUploadAction with a few changes
+- Moved XUploadForm to the extension folder
+
+
+#### v 0.1 Mon Mar 21 14:51:13 COT 2011
+
+- First release
+
