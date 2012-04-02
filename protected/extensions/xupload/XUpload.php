@@ -8,8 +8,8 @@ Yii::import('zii.widgets.jui.CJuiInputWidget');
  *
  * @author AsgarothBelem <asgaroth.belem@gmail.com>
  * @link http://blueimp.github.com/jQuery-File-Upload/
- * @link https://github.com/blueimp/jQuery-File-Upload
- * @version 0.1
+ * @link https://github.com/Asgaroth/xupload
+ * @version 0.2
  *
  */
 class XUpload extends CJuiInputWidget {
