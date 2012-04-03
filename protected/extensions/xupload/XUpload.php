@@ -96,6 +96,8 @@ class XUpload extends CJuiInputWidget {
         if (is_dir($assets)) {
             //@ALEXTODO make ui interface optional
             Yii::app() -> clientScript -> registerCssFile($baseUrl . '/css/jquery.fileupload-ui.css');
+            //The Templates plugin is included to render the upload/download listings
+            Yii::app() -> clientScript -> registerScriptFile("http://blueimp.github.com/JavaScript-Templates/tmpl.min.js", CClientScript::POS_END);
             //The Iframe Transport is required for browsers without support for XHR file uploads
             Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/jquery.iframe-transport.js', CClientScript::POS_END);
             // The basic File Upload plugin

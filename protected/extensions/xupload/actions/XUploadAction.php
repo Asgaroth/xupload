@@ -85,11 +85,10 @@ class XUploadAction extends CAction {
         }
 
         if (!is_dir($this -> path)) {
-            @mkdir($this -> path);
-            @chmod($this -> path, 0777);
+            mkdir($this -> path, 0777, true);
             //throw new CHttpException(500, "{$this->path} does not exists.");
         } else if (!is_writable($this -> path)) {
-            @chmod($this -> path, 0777);
+            chmod($this -> path, 0777);
             //throw new CHttpException(500, "{$this->path} is not writable.");
         }
 
@@ -130,7 +129,7 @@ class XUploadAction extends CAction {
                     $path = ($this -> _subfolder != "") ? "{$this->path}/{$this->_subfolder}/" : "{$this->path}/";
                     $publicPath = ($this -> _subfolder != "") ? "{$this->publicPath}/{$this->_subfolder}/" : "{$this->publicPath}/";
                     if (!is_dir($path)) {
-                        @mkdir($path);
+                        mkdir($path, 0777, true);
                     }
                     $model -> file -> saveAs($path . $model -> name);
                     echo json_encode(array( array("name" => $model -> name, "type" => $model -> mime_type, "size" => $model -> size, "url" => $publicPath . $model -> name, "delete_url" => $this -> getController() -> createUrl("upload", array("_method" => "delete", "file" => $path.$model->name)), "delete_type" => "POST")));
