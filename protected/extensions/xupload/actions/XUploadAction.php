@@ -105,10 +105,16 @@ class XUploadAction extends CAction {
      * @author Asgaroth
      */
     public function run() {
+        header('Vary: Accept');
+        if (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+            header('Content-type: application/json');
+        } else {
+            header('Content-type: text/plain');
+        }
+
         if (isset($_GET["_method"])) {
             if ($_GET["_method"] == "delete") {
                 $success = is_file($_GET["file"]) && $_GET["file"][0] !== '.' && unlink($_GET["file"]);
-                header('Content-type: application/json');
                 echo json_encode($success);
             }
         } else {
@@ -119,12 +125,6 @@ class XUploadAction extends CAction {
                 $model -> mime_type = $model -> file -> getType();
                 $model -> size = $model -> file -> getSize();
                 $model -> name = $model -> file -> getName();
-                header('Vary: Accept');
-                if (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
-                    header('Content-type: application/json');
-                } else {
-                    header('Content-type: text/plain');
-                }
                 if ($model -> validate()) {
                     $path = ($this -> _subfolder != "") ? "{$this->path}/{$this->_subfolder}/" : "{$this->path}/";
                     $publicPath = ($this -> _subfolder != "") ? "{$this->publicPath}/{$this->_subfolder}/" : "{$this->publicPath}/";
@@ -132,7 +132,7 @@ class XUploadAction extends CAction {
                         mkdir($path, 0777, true);
                     }
                     $model -> file -> saveAs($path . $model -> name);
-                    echo json_encode(array( array("name" => $model -> name, "type" => $model -> mime_type, "size" => $model -> size, "url" => $publicPath . $model -> name, "delete_url" => $this -> getController() -> createUrl("upload", array("_method" => "delete", "file" => $path.$model->name)), "delete_type" => "POST")));
+                    echo json_encode(array( array("name" => $model -> name, "type" => $model -> mime_type, "size" => $model -> size, "url" => $publicPath . $model -> name, "delete_url" => $this -> getController() -> createUrl("upload", array("_method" => "delete", "file" => $path . $model -> name)), "delete_type" => "POST")));
                 } else {
                     echo json_encode(array( array("error" => $model -> getErrors('file'), )));
                     Yii::log("XUploadAction: " . CVarDumper::dumpAsString($model -> getErrors()), CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction");
