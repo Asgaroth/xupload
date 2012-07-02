@@ -39,6 +39,21 @@ class XUpload extends CJuiInputWidget {
     public $downloadTemplate;
 
     /**
+	 * @var string name of the form view to be rendered
+	 */
+	public $formView = 'form';
+
+	/**
+	 * @var string name of the upload view to be rendered
+	 */
+	public $uploadView = 'upload';
+
+	/**
+	 * @var string name of the download view to be rendered
+	 */
+	public $downloadView = 'download';
+
+    /**
      * Publishes the required assets
      */
     public function init() {
@@ -57,11 +72,11 @@ class XUpload extends CJuiInputWidget {
 
         if ($this -> uploadTemplate === null) {
             $this -> uploadTemplate = "#template-upload";
-            $this -> render("upload");
+            $this -> render($this->uploadView);
         }
         if ($this -> downloadTemplate === null) {
             $this -> downloadTemplate = "#template-download";
-            $this -> render("download");
+            $this -> render($this->downloadView);
         }
 
         if (!isset($this -> htmlOptions['enctype'])) {
@@ -83,7 +98,7 @@ class XUpload extends CJuiInputWidget {
                 $this -> attribute = "[]" . $this -> name;
             }*/
         }
-        $this -> render("form", compact('htmlOptions'));
+        $this -> render($this->formView, compact('htmlOptions'));
     }
 
     /**
