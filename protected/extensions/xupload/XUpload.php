@@ -48,6 +48,12 @@ class XUpload extends CJuiInputWidget {
      */
     public $imageProcessing = true;
     
+    /**
+     * set to true to auto Uploading Files
+     * @var boolean
+     */
+    public $autoUpload = false;
+    
 	/**
 	 * @var string name of the form view to be rendered
 	 */
@@ -99,6 +105,7 @@ class XUpload extends CJuiInputWidget {
         }
         
         $this->options['url'] = $this->url;
+        $this->options['autoUpload'] = $this -> autoUpload;
 
         $options = CJavaScript::encode($this -> options);
         Yii::app() -> clientScript -> registerScript(__CLASS__ . '#' . $this -> htmlOptions['id'], "jQuery('#{$this->htmlOptions['id']}').fileupload({$options});", CClientScript::POS_READY);
