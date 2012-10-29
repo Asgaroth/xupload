@@ -24,9 +24,3 @@ local.properties
 
 # PDT-specific
 .buildpath
-
-#Yii specific
-assets/**
-assets/**/*
-protected/runtime/**
-protected/runtime/**/*
