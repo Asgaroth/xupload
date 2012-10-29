@@ -149,7 +149,10 @@ class XUploadAction extends CAction {
                     }
                     $model->file->saveAs( $path.$model->name );
                     chmod( $path.$model->name, 0777 );
-                    echo json_encode( array( array(
+
+                    $returnValue = $this->beforeReturn($model, $path, $publicPath);
+                    if($returnValue === true) {
+                        echo json_encode( array( array(
                             "name" => $model->name,
                             "type" => $model->mime_type,
                             "size" => $model->size,
@@ -161,6 +164,11 @@ class XUploadAction extends CAction {
                             ) ),
                             "delete_type" => "POST"
                         ) ) );
+                    }
+                    else {
+                        echo json_encode( array( array( "error" => $returnValue, ) ) );
+                        Yii::log( "XUploadAction: ". $returnValue, CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction" );
+                    }
                 } else {
                     echo json_encode( array( array( "error" => $model->getErrors( 'file' ), ) ) );
                     Yii::log( "XUploadAction: ".CVarDumper::dumpAsString( $model->getErrors( ) ), CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction" );
@@ -171,4 +179,14 @@ class XUploadAction extends CAction {
         }
     }
 
+    /**
+     * A stub to allow running other custom code (such as adding files to state, etc.)
+     * @since 0.5
+     * @author acorncom
+     * @return boolean|string Returns a boolean unless there is an error, in which case
+     * it returns the error message
+     */
+    protected function beforeReturn($model, $path, $publicPath) {
+        return true;
+    }
 }
