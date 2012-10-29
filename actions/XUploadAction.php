@@ -157,7 +157,7 @@ class XUploadAction extends CAction {
                             "type" => $model->mime_type,
                             "size" => $model->size,
                             "url" => $publicPath.$model->name,
-                            "thumbnail_url" => $publicPath.$model->name,
+                            "thumbnail_url" => $this->getThumbnailUrl($model,$publicPath),
                             "delete_url" => $this->getController( )->createUrl( "upload", array(
                                 "_method" => "delete",
                                 "file" => $path.$model->name
@@ -177,6 +177,16 @@ class XUploadAction extends CAction {
                 throw new CHttpException( 500, "Could not upload file" );
             }
         }
+    }
+
+    /**
+     * A stub to allow overrides of thumbnails returned
+     * @since 0.5
+     * @author acorncom
+     * @return string thumbnail name (if blank, thumbnail won't display)
+     */
+    protected function getThumbnailUrl($model, $publicPath) {
+        return $publicPath.$model->filename;
     }
 
     /**
