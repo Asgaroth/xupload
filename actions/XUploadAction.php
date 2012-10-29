@@ -1,5 +1,4 @@
 <?php
-Yii::import( "xupload.models.XUploadForm" );
 
 /**
  * XUploadAction
@@ -42,6 +41,15 @@ Yii::import( "xupload.models.XUploadForm" );
  * @author Asgaroth (http://www.yiiframework.com/user/1883/)
  */
 class XUploadAction extends CAction {
+
+    /**
+     * XUploadForm (or subclass of it) to be used.  Defaults to XUploadForm
+     * @see XUploadAction::init()
+     * @var string
+     * @since 0.5
+     */
+    public $formClass;
+
     /**
      * The query string variable name where the subfolder name will be taken from.
      * If false, no subfolder will be used.
@@ -82,6 +90,10 @@ class XUploadAction extends CAction {
      * @since 0.1
      */
     public function init( ) {
+        if( !isset( $this->formClass ) ) {
+            $this->formClass = 'xupload.models.XUploadForm';
+        }
+
         if( !isset( $this->path ) ) {
             $this->path = realpath( Yii::app( )->getBasePath( )."/../uploads" );
         }
@@ -122,7 +134,7 @@ class XUploadAction extends CAction {
             }
         } else {
             $this->init( );
-            $model = new XUploadForm;
+            $model = Yii::createComponent($this->formClass);
             $model->file = CUploadedFile::getInstance( $model, 'file' );
             if( $model->file !== null ) {
                 $model->mime_type = $model->file->getType( );
