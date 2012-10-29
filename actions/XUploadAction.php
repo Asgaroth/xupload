@@ -78,6 +78,13 @@ class XUploadAction extends CAction {
     public $publicPath;
 
     /**
+     * @var boolean dictates whether to use sha1 to hash the file names
+     * along with time and the user id to make it much harder for malicious users
+     * to attempt to delete another user's file
+     */
+    public $secureFileNames = false;
+
+    /**
      * Name of the state variable the file array is stored in
      * @see XUploadAction::init()
      * @var string
@@ -159,7 +166,7 @@ class XUploadAction extends CAction {
                 echo json_encode( $success );
             }
         } else {
-            $model = Yii::createComponent($this->formClass);
+            $model = Yii::createComponent(array('class'=>$this->formClass,'secureFileNames'=>$this->secureFileNames));
             $model->file = CUploadedFile::getInstance( $model, 'file' );
             if( $model->file !== null ) {
                 $model->mime_type = $model->file->getType( );
