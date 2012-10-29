@@ -5,6 +5,7 @@ class XUploadForm extends CFormModel
         public $mime_type;
         public $size;
         public $name;
+        public $filename;
         /**
          * Declares the validation rules.
          * The rules state that username and password are required,
