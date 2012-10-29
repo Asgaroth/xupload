@@ -1,5 +1,4 @@
 <?php
-Yii::import( "xupload.models.XUploadForm" );
 
 /**
  * XUploadAction
@@ -42,6 +41,15 @@ Yii::import( "xupload.models.XUploadForm" );
  * @author Asgaroth (http://www.yiiframework.com/user/1883/)
  */
 class XUploadAction extends CAction {
+
+    /**
+     * XUploadForm (or subclass of it) to be used.  Defaults to XUploadForm
+     * @see XUploadAction::init()
+     * @var string
+     * @since 0.5
+     */
+    public $formClass;
+
     /**
      * The query string variable name where the subfolder name will be taken from.
      * If false, no subfolder will be used.
@@ -82,6 +90,10 @@ class XUploadAction extends CAction {
      * @since 0.1
      */
     public function init( ) {
+        if( !isset( $this->formClass ) ) {
+            $this->formClass = 'xupload.models.XUploadForm';
+        }
+
         if( !isset( $this->path ) ) {
             $this->path = realpath( Yii::app( )->getBasePath( )."/../uploads" );
         }
@@ -122,12 +134,14 @@ class XUploadAction extends CAction {
             }
         } else {
             $this->init( );
-            $model = new XUploadForm;
+            $model = Yii::createComponent($this->formClass);
             $model->file = CUploadedFile::getInstance( $model, 'file' );
             if( $model->file !== null ) {
                 $model->mime_type = $model->file->getType( );
                 $model->size = $model->file->getSize( );
                 $model->name = $model->file->getName( );
+                $model->filename = $model->name;
+
                 if( $model->validate( ) ) {
                     $path = ($this->_subfolder != "") ? "{$this->path}/{$this->_subfolder}/" : "{$this->path}/";
                     $publicPath = ($this->_subfolder != "") ? "{$this->publicPath}/{$this->_subfolder}/" : "{$this->publicPath}/";
@@ -135,20 +149,28 @@ class XUploadAction extends CAction {
                         mkdir( $path, 0777, true );
                         chmod ( $path , 0777 );
                     }
-                    $model->file->saveAs( $path.$model->name );
-                    chmod( $path.$model->name, 0777 );
-                    echo json_encode( array( array(
+                    $model->file->saveAs( $path.$model->filename );
+                    chmod( $path.$model->filename, 0777 );
+
+                    $returnValue = $this->beforeReturn($model, $path, $publicPath);
+                    if($returnValue === true) {
+                        echo json_encode( array( array(
                             "name" => $model->name,
                             "type" => $model->mime_type,
                             "size" => $model->size,
-                            "url" => $publicPath.$model->name,
-                            "thumbnail_url" => $publicPath.$model->name,
+                            "url" => $publicPath.$model->filename,
+                            "thumbnail_url" => $this->getThumbnailUrl($model,$publicPath),
                             "delete_url" => $this->getController( )->createUrl( "upload", array(
                                 "_method" => "delete",
-                                "file" => $path.$model->name
+                                "file" => $path.$model->filename,
                             ) ),
                             "delete_type" => "POST"
                         ) ) );
+                    }
+                    else {
+                        echo json_encode( array( array( "error" => $returnValue, ) ) );
+                        Yii::log( "XUploadAction: ". $returnValue, CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction" );
+                    }
                 } else {
                     echo json_encode( array( array( "error" => $model->getErrors( 'file' ), ) ) );
                     Yii::log( "XUploadAction: ".CVarDumper::dumpAsString( $model->getErrors( ) ), CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction" );
@@ -159,4 +181,24 @@ class XUploadAction extends CAction {
         }
     }
 
+    /**
+     * A stub to allow overrides of thumbnails returned
+     * @since 0.5
+     * @author acorncom
+     * @return string thumbnail name (if blank, thumbnail won't display)
+     */
+    protected function getThumbnailUrl($model, $publicPath) {
+        return $publicPath.$model->filename;
+    }
+
+    /**
+     * A stub to allow running other custom code (such as adding files to state, etc.)
+     * @since 0.5
+     * @author acorncom
+     * @return boolean|string Returns a boolean unless there is an error, in which case
+     * it returns the error message
+     */
+    protected function beforeReturn($model, $path, $publicPath) {
+        return true;
+    }
 }
