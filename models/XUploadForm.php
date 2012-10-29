@@ -43,4 +43,14 @@ class XUploadForm extends CFormModel
                 if ($sizestring == $sizes[0]) { $retstring = '%01d %s'; } // Bytes aren't normally fractional
                 return sprintf($retstring, $this->size, $sizestring);
         }
+
+        /**
+         * A stub to allow overrides of thumbnails returned
+         * @since 0.5
+         * @author acorncom
+         * @return string thumbnail name (if blank, thumbnail won't display)
+         */
+        public function getThumbnailUrl($publicPath) {
+            return $publicPath.$this->filename;
+        }
 }
