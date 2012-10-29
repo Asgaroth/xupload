@@ -140,6 +140,8 @@ class XUploadAction extends CAction {
                 $model->mime_type = $model->file->getType( );
                 $model->size = $model->file->getSize( );
                 $model->name = $model->file->getName( );
+                $model->filename = $model->name;
+
                 if( $model->validate( ) ) {
                     $path = ($this->_subfolder != "") ? "{$this->path}/{$this->_subfolder}/" : "{$this->path}/";
                     $publicPath = ($this->_subfolder != "") ? "{$this->publicPath}/{$this->_subfolder}/" : "{$this->publicPath}/";
@@ -147,8 +149,8 @@ class XUploadAction extends CAction {
                         mkdir( $path, 0777, true );
                         chmod ( $path , 0777 );
                     }
-                    $model->file->saveAs( $path.$model->name );
-                    chmod( $path.$model->name, 0777 );
+                    $model->file->saveAs( $path.$model->filename );
+                    chmod( $path.$model->filename, 0777 );
 
                     $returnValue = $this->beforeReturn($model, $path, $publicPath);
                     if($returnValue === true) {
@@ -156,11 +158,11 @@ class XUploadAction extends CAction {
                             "name" => $model->name,
                             "type" => $model->mime_type,
                             "size" => $model->size,
-                            "url" => $publicPath.$model->name,
+                            "url" => $publicPath.$model->filename,
                             "thumbnail_url" => $this->getThumbnailUrl($model,$publicPath),
                             "delete_url" => $this->getController( )->createUrl( "upload", array(
                                 "_method" => "delete",
-                                "file" => $path.$model->name
+                                "file" => $path.$model->filename,
                             ) ),
                             "delete_type" => "POST"
                         ) ) );
