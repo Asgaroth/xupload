@@ -78,6 +78,21 @@ class XUploadAction extends CAction {
     public $publicPath;
 
     /**
+     * @var boolean dictates whether to use sha1 to hash the file names
+     * along with time and the user id to make it much harder for malicious users
+     * to attempt to delete another user's file
+     */
+    public $secureFileNames = false;
+
+    /**
+     * Name of the state variable the file array is stored in
+     * @see XUploadAction::init()
+     * @var string
+     * @since 0.5
+     */
+    public $stateVariable;
+
+    /**
      * The resolved subfolder to upload the file to
      * @var string
      * @since 0.2
@@ -107,6 +122,10 @@ class XUploadAction extends CAction {
             //throw new CHttpException(500, "{$this->path} is not writable.");
         }
 
+        if( !isset( $this->stateVariable ) ) {
+            $this->stateVariable = 'xuploadFiles';
+        }
+
         if( $this->subfolderVar !== null ) {
             $this->_subfolder = Yii::app( )->request->getQuery( $this->subfolderVar, date( "mdY" ) );
         } else if( $this->subfolderVar !== false ) {
@@ -127,14 +146,27 @@ class XUploadAction extends CAction {
             header( 'Content-type: text/plain' );
         }
 
+        $this->init( );
         if( isset( $_GET["_method"] ) ) {
             if( $_GET["_method"] == "delete" ) {
-                $success = is_file( $_GET["file"] ) && $_GET["file"][0] !== '.' && unlink( $_GET["file"] );
+                $success = false;
+                if($_GET["file"][0] !== '.' && Yii::app( )->user->hasState( $this->stateVariable ) ) {
+                    // pull our userFiles array out of state and only allow them to delete
+                    // files from within that array
+                    $userFiles = Yii::app( )->user->getState( $this->stateVariable, array());
+
+                    if(is_file( $userFiles[$_GET["file"]]['path'] )) {
+                        $success = unlink( $userFiles[$_GET["file"]]['path'] );
+                        if($success) {
+                            unset($userFiles[$_GET["file"]]); // remove it from our session and save that info
+                            Yii::app( )->user->setState( $this->stateVariable, $userFiles );
+                        }
+                    }
+                }
                 echo json_encode( $success );
             }
         } else {
-            $this->init( );
-            $model = Yii::createComponent($this->formClass);
+            $model = Yii::createComponent(array('class'=>$this->formClass,'secureFileNames'=>$this->secureFileNames));
             $model->file = CUploadedFile::getInstance( $model, 'file' );
             if( $model->file !== null ) {
                 $model->mime_type = $model->file->getType( );
@@ -162,7 +194,7 @@ class XUploadAction extends CAction {
                             "thumbnail_url" => $model->getThumbnailUrl($publicPath),
                             "delete_url" => $this->getController( )->createUrl( "upload", array(
                                 "_method" => "delete",
-                                "file" => $path.$model->filename,
+                                "file" => $model->filename,
                             ) ),
                             "delete_type" => "POST"
                         ) ) );
@@ -182,13 +214,28 @@ class XUploadAction extends CAction {
     }
 
     /**
-     * A stub to allow running other custom code (such as adding files to state, etc.)
+     * We store info in session to make sure we only delete files we intended to
+     * Other code can override this though to do other things with state, thumbnail generation, etc.
      * @since 0.5
      * @author acorncom
      * @return boolean|string Returns a boolean unless there is an error, in which case
      * it returns the error message
      */
     protected function beforeReturn($model, $path, $publicPath) {
+        // Now we need to save our file info to the user's session
+        $userFiles = Yii::app( )->user->getState( $this->stateVariable, array());
+
+        $userFiles[$model->filename] = array(
+            "path" => $path.$model->filename,
+            //the same file or a thumb version that you generated
+            "thumb" => $path.$model->filename,
+            "filename" => $model->filename,
+            'size' => $model->size,
+            'mime' => $model->mime_type,
+            'name' => $model->name,
+        );
+        Yii::app( )->user->setState( $this->stateVariable, $userFiles );
+
         return true;
     }
 }
