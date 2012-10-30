@@ -51,6 +51,46 @@ class XUploadAction extends CAction {
     public $formClass;
 
     /**
+     * Name of the model attribute referring to the uploaded file.
+     * Defaults to 'file', the default value in XUploadForm
+     * @var string
+     * @since 0.5
+     */
+    public $fileAttribute = 'file';
+
+    /**
+     * Name of the model attribute used to store mimeType information.
+     * Defaults to 'mime_type', the default value in XUploadForm
+     * @var string
+     * @since 0.5
+     */
+    public $mimeTypeAttribute = 'mime_type';
+
+    /**
+     * Name of the model attribute used to store file size.
+     * Defaults to 'size', the default value in XUploadForm
+     * @var string
+     * @since 0.5
+     */
+    public $sizeAttribute = 'size';
+
+    /**
+     * Name of the model attribute used to store the file's display name.
+     * Defaults to 'name', the default value in XUploadForm
+     * @var string
+     * @since 0.5
+     */
+    public $displayNameAttribute = 'name';
+
+    /**
+     * Name of the model attribute used to store the file filesystem name.
+     * Defaults to 'filename', the default value in XUploadForm
+     * @var string
+     * @since 0.5
+     */
+    public $fileNameAttribute = 'filename';
+
+    /**
      * The query string variable name where the subfolder name will be taken from.
      * If false, no subfolder will be used.
      * Defaults to null meaning the subfolder to be used will be the result of date("mdY").
@@ -167,12 +207,12 @@ class XUploadAction extends CAction {
             }
         } else {
             $model = Yii::createComponent(array('class'=>$this->formClass,'secureFileNames'=>$this->secureFileNames));
-            $model->file = CUploadedFile::getInstance( $model, 'file' );
-            if( $model->file !== null ) {
-                $model->mime_type = $model->file->getType( );
-                $model->size = $model->file->getSize( );
-                $model->name = $model->file->getName( );
-                $model->filename = $model->name;
+            $model->{$this->fileAttribute} = CUploadedFile::getInstance( $model, $this->fileAttribute );
+            if( $model->{$this->fileAttribute} !== null ) {
+                $model->{$this->mimeTypeAttribute} = $model->{$this->fileAttribute}->getType( );
+                $model->{$this->sizeAttribute} = $model->{$this->fileAttribute}->getSize( );
+                $model->{$this->displayNameAttribute} = $model->{$this->fileAttribute}->getName( );
+                $model->{$this->fileNameAttribute} = $model->{$this->displayNameAttribute};
 
                 if( $model->validate( ) ) {
                     $path = ($this->_subfolder != "") ? "{$this->path}/{$this->_subfolder}/" : "{$this->path}/";
@@ -181,20 +221,20 @@ class XUploadAction extends CAction {
                         mkdir( $path, 0777, true );
                         chmod ( $path , 0777 );
                     }
-                    $model->file->saveAs( $path.$model->filename );
-                    chmod( $path.$model->filename, 0777 );
+                    $model->{$this->fileAttribute}->saveAs( $path.$model->{$this->fileNameAttribute} );
+                    chmod( $path.$model->{$this->fileNameAttribute}, 0777 );
 
                     $returnValue = $this->beforeReturn($model, $path, $publicPath);
                     if($returnValue === true) {
                         echo json_encode( array( array(
-                            "name" => $model->name,
-                            "type" => $model->mime_type,
-                            "size" => $model->size,
-                            "url" => $publicPath.$model->filename,
+                            "name" => $model->{$this->displayNameAttribute},
+                            "type" => $model->{$this->mimeTypeAttribute},
+                            "size" => $model->{$this->sizeAttribute},
+                            "url" => $publicPath.$model->{$this->fileNameAttribute},
                             "thumbnail_url" => $model->getThumbnailUrl($publicPath),
                             "delete_url" => $this->getController( )->createUrl( "upload", array(
                                 "_method" => "delete",
-                                "file" => $model->filename,
+                                "file" => $model->{$this->fileNameAttribute},
                             ) ),
                             "delete_type" => "POST"
                         ) ) );
@@ -204,7 +244,7 @@ class XUploadAction extends CAction {
                         Yii::log( "XUploadAction: ". $returnValue, CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction" );
                     }
                 } else {
-                    echo json_encode( array( array( "error" => $model->getErrors( 'file' ), ) ) );
+                    echo json_encode( array( array( "error" => $model->getErrors( $this->fileAttribute ), ) ) );
                     Yii::log( "XUploadAction: ".CVarDumper::dumpAsString( $model->getErrors( ) ), CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction" );
                 }
             } else {
@@ -225,14 +265,14 @@ class XUploadAction extends CAction {
         // Now we need to save our file info to the user's session
         $userFiles = Yii::app( )->user->getState( $this->stateVariable, array());
 
-        $userFiles[$model->filename] = array(
-            "path" => $path.$model->filename,
+        $userFiles[$model->{$this->fileNameAttribute}] = array(
+            "path" => $path.$model->{$this->fileNameAttribute},
             //the same file or a thumb version that you generated
-            "thumb" => $path.$model->filename,
-            "filename" => $model->filename,
-            'size' => $model->size,
-            'mime' => $model->mime_type,
-            'name' => $model->name,
+            "thumb" => $path.$model->{$this->fileNameAttribute},
+            "filename" => $model->{$this->fileNameAttribute},
+            'size' => $model->{$this->sizeAttribute},
+            'mime' => $model->{$this->mimeTypeAttribute},
+            'name' => $model->{$this->displayNameAttribute},
         );
         Yii::app( )->user->setState( $this->stateVariable, $userFiles );
 
