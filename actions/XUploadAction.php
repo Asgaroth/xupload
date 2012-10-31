@@ -140,6 +140,13 @@ class XUploadAction extends CAction {
     private $_subfolder = "";
 
     /**
+     * The form model we'll be saving our files to
+     * @var CModel (or subclass)
+     * @since 0.5
+     */
+    private $_formModel;
+
+    /**
      * Initialize the propeties of pthis action, if they are not set.
      *
      * @since 0.1
@@ -163,6 +170,14 @@ class XUploadAction extends CAction {
             $this->_subfolder = Yii::app( )->request->getQuery( $this->subfolderVar, date( "mdY" ) );
         } else if( $this->subfolderVar !== false ) {
             $this->_subfolder = date( "mdY" );
+        }
+
+        if( !isset($this->_formModel)) {
+            $this->formModel = Yii::createComponent(array('class'=>$this->formClass));
+        }
+
+        if($this->secureFileNames) {
+            $this->formModel->secureFileNames = true;
         }
     }
 
@@ -199,7 +214,7 @@ class XUploadAction extends CAction {
             }
         } else {
             $this->init( );
-            $model = Yii::createComponent(array('class'=>$this->formClass,'secureFileNames'=>$this->secureFileNames));
+            $model = $this->formModel;
             $model->{$this->fileAttribute} = CUploadedFile::getInstance( $model, $this->fileAttribute );
             if( $model->{$this->fileAttribute} !== null ) {
                 $model->{$this->mimeTypeAttribute} = $model->{$this->fileAttribute}->getType( );
@@ -217,7 +232,7 @@ class XUploadAction extends CAction {
                     $model->{$this->fileAttribute}->saveAs( $path.$model->{$this->fileNameAttribute} );
                     chmod( $path.$model->{$this->fileNameAttribute}, 0777 );
 
-                    $returnValue = $this->beforeReturn($model, $path, $publicPath);
+                    $returnValue = $this->beforeReturn($path, $publicPath);
                     if($returnValue === true) {
                         echo json_encode( array( array(
                             "name" => $model->{$this->displayNameAttribute},
@@ -254,21 +269,33 @@ class XUploadAction extends CAction {
      * @return boolean|string Returns a boolean unless there is an error, in which case
      * it returns the error message
      */
-    protected function beforeReturn($model, $path, $publicPath) {
+    protected function beforeReturn($path, $publicPath) {
         // Now we need to save our file info to the user's session
         $userFiles = Yii::app( )->user->getState( $this->stateVariable, array());
 
-        $userFiles[$model->{$this->fileNameAttribute}] = array(
-            "path" => $path.$model->{$this->fileNameAttribute},
+        $userFiles[$this->formModel->{$this->fileNameAttribute}] = array(
+            "path" => $path.$this->formModel->{$this->fileNameAttribute},
             //the same file or a thumb version that you generated
-            "thumb" => $path.$model->{$this->fileNameAttribute},
-            "filename" => $model->{$this->fileNameAttribute},
-            'size' => $model->{$this->sizeAttribute},
-            'mime' => $model->{$this->mimeTypeAttribute},
-            'name' => $model->{$this->displayNameAttribute},
+            "thumb" => $path.$this->formModel->{$this->fileNameAttribute},
+            "filename" => $this->formModel->{$this->fileNameAttribute},
+            'size' => $this->formModel->{$this->sizeAttribute},
+            'mime' => $this->formModel->{$this->mimeTypeAttribute},
+            'name' => $this->formModel->{$this->displayNameAttribute},
         );
         Yii::app( )->user->setState( $this->stateVariable, $userFiles );
 
         return true;
+    }
+
+    /**
+     * Our form model setter.  Allows us to pass in a instantiated form model with options set
+     * @param $model
+     */
+    public function setFormModel($model) {
+        $this->_formModel = $model;
+    }
+
+    public function getFormModel() {
+        return $this->_formModel;
     }
 }
