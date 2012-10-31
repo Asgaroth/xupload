@@ -48,7 +48,7 @@ class XUploadAction extends CAction {
      * @var string
      * @since 0.5
      */
-    public $formClass;
+    public $formClass = 'xupload.models.XUploadForm';
 
     /**
      * Name of the model attribute referring to the uploaded file.
@@ -130,7 +130,7 @@ class XUploadAction extends CAction {
      * @var string
      * @since 0.5
      */
-    public $stateVariable;
+    public $stateVariable = 'xuploadFiles';
 
     /**
      * The resolved subfolder to upload the file to
@@ -145,9 +145,6 @@ class XUploadAction extends CAction {
      * @since 0.1
      */
     public function init( ) {
-        if( !isset( $this->formClass ) ) {
-            $this->formClass = 'xupload.models.XUploadForm';
-        }
 
         if( !isset( $this->path ) ) {
             $this->path = realpath( Yii::app( )->getBasePath( )."/../uploads" );
@@ -160,10 +157,6 @@ class XUploadAction extends CAction {
         } else if( !is_writable( $this->path ) ) {
             chmod( $this->path, 0777 );
             //throw new CHttpException(500, "{$this->path} is not writable.");
-        }
-
-        if( !isset( $this->stateVariable ) ) {
-            $this->stateVariable = 'xuploadFiles';
         }
 
         if( $this->subfolderVar !== null ) {
@@ -186,7 +179,6 @@ class XUploadAction extends CAction {
             header( 'Content-type: text/plain' );
         }
 
-        $this->init( );
         if( isset( $_GET["_method"] ) ) {
             if( $_GET["_method"] == "delete" ) {
                 $success = false;
@@ -206,6 +198,7 @@ class XUploadAction extends CAction {
                 echo json_encode( $success );
             }
         } else {
+            $this->init( );
             $model = Yii::createComponent(array('class'=>$this->formClass,'secureFileNames'=>$this->secureFileNames));
             $model->{$this->fileAttribute} = CUploadedFile::getInstance( $model, $this->fileAttribute );
             if( $model->{$this->fileAttribute} !== null ) {
