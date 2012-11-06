@@ -225,7 +225,6 @@ class XUploadAction extends CAction {
                 if( $model->validate( ) ) {
 
                     $path = $this->getPath();
-                    $publicPath = $this->getPublicPath();
 
                     if( !is_dir( $path ) ) {
                         mkdir( $path, 0777, true );
@@ -235,14 +234,14 @@ class XUploadAction extends CAction {
                     $model->{$this->fileAttribute}->saveAs( $path.$model->{$this->fileNameAttribute} );
                     chmod( $path.$model->{$this->fileNameAttribute}, 0777 );
 
-                    $returnValue = $this->beforeReturn($path, $publicPath);
+                    $returnValue = $this->beforeReturn();
                     if($returnValue === true) {
                         echo json_encode( array( array(
                             "name" => $model->{$this->displayNameAttribute},
                             "type" => $model->{$this->mimeTypeAttribute},
                             "size" => $model->{$this->sizeAttribute},
-                            "url" => $publicPath.$model->{$this->fileNameAttribute},
-                            "thumbnail_url" => $model->getThumbnailUrl($publicPath),
+                            "url" => $this->getPublicPath().$model->{$this->fileNameAttribute},
+                            "thumbnail_url" => $model->getThumbnailUrl($this->getPublicPath()),
                             "delete_url" => $this->getController( )->createUrl( "upload", array(
                                 "_method" => "delete",
                                 "file" => $model->{$this->fileNameAttribute},
@@ -272,7 +271,9 @@ class XUploadAction extends CAction {
      * @return boolean|string Returns a boolean unless there is an error, in which case
      * it returns the error message
      */
-    protected function beforeReturn($path, $publicPath) {
+    protected function beforeReturn() {
+        $path = $this->getPath();
+
         // Now we need to save our file info to the user's session
         $userFiles = Yii::app( )->user->getState( $this->stateVariable, array());
 
