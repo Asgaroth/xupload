@@ -203,7 +203,7 @@ class XUploadAction extends CAction {
                     $userFiles = Yii::app( )->user->getState( $this->stateVariable, array());
 
                     if(is_file( $userFiles[$_GET["file"]]['path'] )) {
-                        $success = unlink( $userFiles[$_GET["file"]]['path'] );
+                        $success = $this->delete( $userFiles[$_GET["file"]]['path'] );
                         if($success) {
                             unset($userFiles[$_GET["file"]]); // remove it from our session and save that info
                             Yii::app( )->user->setState( $this->stateVariable, $userFiles );
@@ -223,6 +223,7 @@ class XUploadAction extends CAction {
                 $model->{$this->fileNameAttribute} = $model->{$this->displayNameAttribute};
 
                 if( $model->validate( ) ) {
+
                     $path = ($this->_subfolder != "") ? "{$this->path}/{$this->_subfolder}/" : "{$this->path}/";
                     $publicPath = ($this->_subfolder != "") ? "{$this->publicPath}/{$this->_subfolder}/" : "{$this->publicPath}/";
                     if( !is_dir( $path ) ) {
@@ -285,6 +286,16 @@ class XUploadAction extends CAction {
         Yii::app( )->user->setState( $this->stateVariable, $userFiles );
 
         return true;
+    }
+
+    /**
+     * Deletes our file.
+     * @param $path
+     * @since 0.5
+     * @return bool
+     */
+    protected function delete($path) {
+        return unlink($path);
     }
 
     /**
