@@ -224,12 +224,14 @@ class XUploadAction extends CAction {
 
                 if( $model->validate( ) ) {
 
-                    $path = ($this->_subfolder != "") ? "{$this->path}/{$this->_subfolder}/" : "{$this->path}/";
-                    $publicPath = ($this->_subfolder != "") ? "{$this->publicPath}/{$this->_subfolder}/" : "{$this->publicPath}/";
+                    $path = $this->getPath();
+                    $publicPath = $this->getPublicPath();
+
                     if( !is_dir( $path ) ) {
                         mkdir( $path, 0777, true );
                         chmod ( $path , 0777 );
                     }
+
                     $model->{$this->fileAttribute}->saveAs( $path.$model->{$this->fileNameAttribute} );
                     chmod( $path.$model->{$this->fileNameAttribute}, 0777 );
 
@@ -286,6 +288,23 @@ class XUploadAction extends CAction {
         Yii::app( )->user->setState( $this->stateVariable, $userFiles );
 
         return true;
+    }
+
+    /**
+     * Returns the file's path on the filesystem
+     * @return string
+     */
+    protected function getPath() {
+        $path = ($this->_subfolder != "") ? "{$this->path}/{$this->_subfolder}/" : "{$this->path}/";
+        return $path;
+    }
+
+    /**
+     * Returns the file's relative URL path
+     * @return string
+     */
+    protected function getPublicPath() {
+        return ($this->_subfolder != "") ? "{$this->publicPath}/{$this->_subfolder}/" : "{$this->publicPath}/";
     }
 
     /**
