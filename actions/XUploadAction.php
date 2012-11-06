@@ -240,7 +240,7 @@ class XUploadAction extends CAction {
                             "name" => $model->{$this->displayNameAttribute},
                             "type" => $model->{$this->mimeTypeAttribute},
                             "size" => $model->{$this->sizeAttribute},
-                            "url" => $this->getPublicPath().$model->{$this->fileNameAttribute},
+                            "url" => $this->getFileUrl($model->{$this->fileNameAttribute}),
                             "thumbnail_url" => $model->getThumbnailUrl($this->getPublicPath()),
                             "delete_url" => $this->getController( )->createUrl( "upload", array(
                                 "_method" => "delete",
@@ -289,6 +289,15 @@ class XUploadAction extends CAction {
         Yii::app( )->user->setState( $this->stateVariable, $userFiles );
 
         return true;
+    }
+
+    /**
+     * Returns the file URL for our file
+     * @param $fileName
+     * @return string
+     */
+    protected function getFileUrl($fileName) {
+        return $this->getPublicPath().$fileName;
     }
 
     /**
