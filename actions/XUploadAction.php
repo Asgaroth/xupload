@@ -202,7 +202,7 @@ class XUploadAction extends CAction {
                     // files from within that array
                     $userFiles = Yii::app( )->user->getState( $this->stateVariable, array());
 
-                    if(is_file( $userFiles[$_GET["file"]]['path'] )) {
+                    if($this->fileExists($userFiles[$_GET['file']])) {
                         $success = $this->deleteFile( $userFiles[$_GET["file"]]['path'] );
                         if($success) {
                             unset($userFiles[$_GET["file"]]); // remove it from our session and save that info
@@ -308,5 +308,14 @@ class XUploadAction extends CAction {
 
     public function getFormModel() {
         return $this->_formModel;
+    }
+
+    /**
+     * Allows file existence checking prior to deleting
+     * @param $file
+     * @return bool
+     */
+    protected function fileExists($file) {
+        return is_file( $file['path'] );
     }
 }
