@@ -165,10 +165,9 @@ class XUploadAction extends CAction {
             chmod( $this->path, 0777 );
             //throw new CHttpException(500, "{$this->path} is not writable.");
         }
-
-        if( $this->subfolderVar !== null ) {
+        if( $this->subfolderVar === null ) {
             $this->_subfolder = Yii::app( )->request->getQuery( $this->subfolderVar, date( "mdY" ) );
-        } else if( $this->subfolderVar !== false ) {
+        } else if($this->subfolderVar !== false ) {
             $this->_subfolder = date( "mdY" );
         }
 
@@ -263,7 +262,7 @@ class XUploadAction extends CAction {
                         "size" => $model->{$this->sizeAttribute},
                         "url" => $publicPath . $model->{$this->fileNameAttribute},
                         "thumbnail_url" => $model->getThumbnailUrl($publicPath),
-                        "delete_url" => $this->getController()->createUrl("upload", array(
+                        "delete_url" => $this->getController()->createUrl($this->getId(), array(
                             "_method" => "delete",
                             "file" => $model->{$this->fileNameAttribute},
                         )),

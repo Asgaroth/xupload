@@ -37,7 +37,7 @@ class XUpload extends CJuiInputWidget {
      * defaults to null, meaning using the built-in template
      */
     public $downloadTemplate;
-    
+
     /**
      * Wheter or not to preview image files before upload
      */
@@ -47,27 +47,27 @@ class XUpload extends CJuiInputWidget {
      * Wheter or not to add the image processing pluing
      */
     public $imageProcessing = true;
-    
+
     /**
      * set to true to auto Uploading Files
      * @var boolean
      */
     public $autoUpload = false;
-    
-	/**
-	 * @var string name of the form view to be rendered
-	 */
-	public $formView = 'form';
 
-	/**
-	 * @var string name of the upload view to be rendered
-	 */
-	public $uploadView = 'upload';
+    /**
+     * @var string name of the form view to be rendered
+     */
+    public $formView = 'form';
 
-	/**
-	 * @var string name of the download view to be rendered
-	 */
-	public $downloadView = 'download';
+    /**
+     * @var string name of the upload view to be rendered
+     */
+    public $uploadView = 'upload';
+
+    /**
+     * @var string name of the download view to be rendered
+     */
+    public $downloadView = 'download';
 
     /**
      * @var bool whether form tag should be used at widget
@@ -97,18 +97,18 @@ class XUpload extends CJuiInputWidget {
         if ($this -> downloadTemplate === null) {
             $this -> downloadTemplate = "#template-download";
         }
-        
+
         $this -> render($this->uploadView);
         $this -> render($this->downloadView);
 
         if (!isset($this -> htmlOptions['enctype'])) {
             $this -> htmlOptions['enctype'] = 'multipart/form-data';
         }
-        
+
         if (!isset($this -> htmlOptions['id'])) {
-           $this -> htmlOptions['id'] = get_class($model) . "-form";
+            $this -> htmlOptions['id'] = get_class($model) . "-form";
         }
-        
+
         $this->options['url'] = $this->url;
         $this->options['autoUpload'] = $this -> autoUpload;
 
@@ -122,11 +122,11 @@ class XUpload extends CJuiInputWidget {
         $htmlOptions = array();
         if ($this -> multiple) {
             $htmlOptions["multiple"] = true;
-           /* if($this->hasModel()){
-                $this -> attribute = "[]" . $this -> attribute;
-            }else{
-                $this -> attribute = "[]" . $this -> name;
-            }*/
+            /* if($this->hasModel()){
+                 $this -> attribute = "[]" . $this -> attribute;
+             }else{
+                 $this -> attribute = "[]" . $this -> name;
+             }*/
         }
 
         $this -> render($this->formView, compact('htmlOptions'));
@@ -144,12 +144,12 @@ class XUpload extends CJuiInputWidget {
             //@ALEXTODO make ui interface optional
             Yii::app() -> clientScript -> registerCssFile($baseUrl . '/css/jquery.fileupload-ui.css');
             //The Templates plugin is included to render the upload/download listings
-            Yii::app() -> clientScript -> registerScriptFile("http://blueimp.github.com/JavaScript-Templates/tmpl.min.js", CClientScript::POS_END);
+            Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/tmpl.min.js', CClientScript::POS_END);
             // The basic File Upload plugin
             Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/jquery.fileupload.js', CClientScript::POS_END);
             if($this->previewImages || $this->imageProcessing){
-                Yii::app() -> clientScript -> registerScriptFile("http://blueimp.github.com/JavaScript-Load-Image/load-image.min.js", CClientScript::POS_END);
-                Yii::app() -> clientScript -> registerScriptFile("http://blueimp.github.com/JavaScript-Canvas-to-Blob/canvas-to-blob.min.js", CClientScript::POS_END);
+                Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/load-image.min.js', CClientScript::POS_END);
+                Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/canvas-to-blob.min.js', CClientScript::POS_END);
             }
             //The Iframe Transport is required for browsers without support for XHR file uploads
             Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/jquery.iframe-transport.js', CClientScript::POS_END);
@@ -181,8 +181,8 @@ class XUpload extends CJuiInputWidget {
 
             Yii::app()->clientScript->registerScript('XuploadI18N', $js, CClientScript::POS_END);
             /**
-             <!-- The XDomainRequest Transport is included for cross-domain file deletion for IE8+ -->
-             <!--[if gte IE 8]><script src="<?php echo Yii::app()->baseUrl; ?>/js/cors/jquery.xdr-transport.js"></script><![endif]-->
+            <!-- The XDomainRequest Transport is included for cross-domain file deletion for IE8+ -->
+            <!--[if gte IE 8]><script src="<?php echo Yii::app()->baseUrl; ?>/js/cors/jquery.xdr-transport.js"></script><![endif]-->
              *
              */
         } else {
