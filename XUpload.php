@@ -70,6 +70,11 @@ class XUpload extends CJuiInputWidget {
 	public $downloadView = 'download';
 
     /**
+     * @var bool whether form tag should be used at widget
+     */
+    public $showForm = false;
+
+    /**
      * Publishes the required assets
      */
     public function init() {
@@ -154,8 +159,27 @@ class XUpload extends CJuiInputWidget {
             }
             //The File Upload user interface plugin
             Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/jquery.fileupload-ui.js', CClientScript::POS_END);
+
             //The localization script
-            Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/locale.js', CClientScript::POS_END);
+            $messages = CJavaScript::encode(array(
+                'fileupload' => array(
+                    'errors' => array(
+                        "maxFileSize" => $this->t('File is too big'),
+                        "minFileSize" => $this->t('File is too small'),
+                        "acceptFileTypes" => $this->t('Filetype not allowed'),
+                        "maxNumberOfFiles" => $this->t('Max number of files exceeded'),
+                        "uploadedBytes" => $this->t('Uploaded bytes exceed file size'),
+                        "emptyResult" => $this->t('Empty file upload result'),
+                    ),
+                    'error' => $this->t('Error'),
+                    'start' => $this->t('Start'),
+                    'cancel' => $this->t('Cancel'),
+                    'destroy' => $this->t('Delete'),
+                ),
+            ));
+            $js = "window.locale = {$messages}";
+
+            Yii::app()->clientScript->registerScript('XuploadI18N', $js, CClientScript::POS_END);
             /**
              <!-- The XDomainRequest Transport is included for cross-domain file deletion for IE8+ -->
              <!--[if gte IE 8]><script src="<?php echo Yii::app()->baseUrl; ?>/js/cors/jquery.xdr-transport.js"></script><![endif]-->
@@ -164,6 +188,11 @@ class XUpload extends CJuiInputWidget {
         } else {
             throw new CHttpException(500, __CLASS__ . ' - Error: Couldn\'t find assets to publish.');
         }
+    }
+
+    protected function t($message, $params=array ( ))
+    {
+        return Yii::t('xupload.widget', $message, $params);
     }
 
 }
