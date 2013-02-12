@@ -39,12 +39,12 @@ class XUpload extends CJuiInputWidget {
     public $downloadTemplate;
 
     /**
-     * Wheter or not to preview image files before upload
+     * Whether or not to preview image files before upload
      */
     public $previewImages = true;
 
     /**
-     * Wheter or not to add the image processing pluing
+     * Whether or not to add the image processing plugin
      */
     public $imageProcessing = true;
 
@@ -134,7 +134,7 @@ class XUpload extends CJuiInputWidget {
     }
 
     /**
-     * Publises and registers the required CSS and Javascript
+     * Publishes and registers the required CSS and Javascript
      * @throws CHttpException if the assets folder was not found
      */
     public function publishAssets() {
