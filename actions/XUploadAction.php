@@ -165,9 +165,9 @@ class XUploadAction extends CAction {
             chmod( $this->path, 0777 );
             //throw new CHttpException(500, "{$this->path} is not writable.");
         }
-        if( $this->subfolderVar === null ) {
+        if( $this->subfolderVar !== null && $this->subfolderVar !== false ) {
             $this->_subfolder = Yii::app( )->request->getQuery( $this->subfolderVar, date( "mdY" ) );
-        } else if($this->subfolderVar !== false ) {
+        } else if( $this->subfolderVar !== false ) {
             $this->_subfolder = date( "mdY" );
         }
 
@@ -213,8 +213,8 @@ class XUploadAction extends CAction {
                 // files from within that array
                 $userFiles = Yii::app()->user->getState($this->stateVariable, array());
 
-                if (is_file($userFiles[$_GET["file"]]['path'])) {
-                    $success = $this->delete($userFiles[$_GET["file"]]['path']);
+                if ($this->fileExists($userFiles[$_GET["file"]])) {
+                    $success = $this->deleteFile($userFiles[$_GET["file"]]);
                     if ($success) {
                         unset($userFiles[$_GET["file"]]); // remove it from our session and save that info
                         Yii::app()->user->setState($this->stateVariable, $userFiles);
@@ -245,23 +245,24 @@ class XUploadAction extends CAction {
 
             if ($model->validate()) {
 
-                $path = ($this->_subfolder != "") ? "{$this->path}/{$this->_subfolder}/" : "{$this->path}/";
-                $publicPath = ($this->_subfolder != "") ? "{$this->publicPath}/{$this->_subfolder}/" : "{$this->publicPath}/";
+                $path = $this->getPath();
+
                 if (!is_dir($path)) {
                     mkdir($path, 0777, true);
                     chmod($path, 0777);
                 }
+
                 $model->{$this->fileAttribute}->saveAs($path . $model->{$this->fileNameAttribute});
                 chmod($path . $model->{$this->fileNameAttribute}, 0777);
 
-                $returnValue = $this->beforeReturn($path, $publicPath);
+                $returnValue = $this->beforeReturn();
                 if ($returnValue === true) {
                     echo json_encode(array(array(
                         "name" => $model->{$this->displayNameAttribute},
                         "type" => $model->{$this->mimeTypeAttribute},
                         "size" => $model->{$this->sizeAttribute},
-                        "url" => $publicPath . $model->{$this->fileNameAttribute},
-                        "thumbnail_url" => $model->getThumbnailUrl($publicPath),
+                        "url" => $this->getFileUrl($model->{$this->fileNameAttribute}),
+                        "thumbnail_url" => $model->getThumbnailUrl($this->getPublicPath()),
                         "delete_url" => $this->getController()->createUrl($this->getId(), array(
                             "_method" => "delete",
                             "file" => $model->{$this->fileNameAttribute},
@@ -273,8 +274,7 @@ class XUploadAction extends CAction {
                     Yii::log("XUploadAction: " . $returnValue, CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction");
                 }
             } else {
-                echo json_encode(array(array("error" => $model->getErrors($this->fileAttribute),)));
-                Yii::log("XUploadAction: " . CVarDumper::dumpAsString($model->getErrors()), CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction");
+                $this->afterValidateError($model);
             }
         } else {
             throw new CHttpException(500, "Could not upload file");
@@ -288,7 +288,9 @@ class XUploadAction extends CAction {
      * @author acorncom
      * @return boolean|string Returns a boolean unless there is an error, in which case it returns the error message
      */
-    protected function beforeReturn($path, $publicPath) {
+    protected function beforeReturn() {
+        $path = $this->getPath();
+
         // Now we need to save our file info to the user's session
         $userFiles = Yii::app( )->user->getState( $this->stateVariable, array());
 
@@ -307,13 +309,39 @@ class XUploadAction extends CAction {
     }
 
     /**
+     * Returns the file URL for our file
+     * @param $fileName
+     * @return string
+     */
+    protected function getFileUrl($fileName) {
+        return $this->getPublicPath().$fileName;
+    }
+
+    /**
+     * Returns the file's path on the filesystem
+     * @return string
+     */
+    protected function getPath() {
+        $path = ($this->_subfolder != "") ? "{$this->path}/{$this->_subfolder}/" : "{$this->path}/";
+        return $path;
+    }
+
+    /**
+     * Returns the file's relative URL path
+     * @return string
+     */
+    protected function getPublicPath() {
+        return ($this->_subfolder != "") ? "{$this->publicPath}/{$this->_subfolder}/" : "{$this->publicPath}/";
+    }
+
+    /**
      * Deletes our file.
-     * @param $path
+     * @param $file
      * @since 0.5
      * @return bool
      */
-    protected function delete($path) {
-        return unlink($path);
+    protected function deleteFile($file) {
+        return unlink($file['path']);
     }
 
     /**
@@ -326,5 +354,25 @@ class XUploadAction extends CAction {
 
     public function getFormModel() {
         return $this->_formModel;
+    }
+
+    /**
+     * Allows file existence checking prior to deleting
+     * @param $file
+     * @return bool
+     */
+    protected function fileExists($file) {
+        return is_file( $file['path'] );
+    }
+
+    /**
+     * Returns an error to our client via Ajax
+     * Also allows for logging and sending any other notifications needed about our validation error
+     * @author acorncom
+     * @param $model
+     */
+    protected function afterValidateError($model) {
+        echo json_encode(array(array("error" => $model->getErrors($this->fileAttribute),)));
+        Yii::log("XUploadAction: " . CVarDumper::dumpAsString($model->getErrors()), CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction");
     }
 }

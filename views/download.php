@@ -22,7 +22,9 @@
                 <i class="icon-trash icon-white"></i>
                 <span>{%=locale.fileupload.destroy%}</span>
             </button>
-            <?php if ($this->multiple) { ?><input type="checkbox" name="delete" value="1"><?php } ?>
+            <?php if ($this->multiple) : ?><input type="checkbox" name="delete" value="1">
+            <?php else: ?><input type="hidden" name="delete" value="1">
+            <?php endif; ?>
         </td>
     </tr>
 {% } %}

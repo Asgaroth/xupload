@@ -39,14 +39,20 @@ class XUpload extends CJuiInputWidget {
     public $downloadTemplate;
 
     /**
-     * Wheter or not to preview image files before upload
+     * Whether or not to preview image files before upload
      */
     public $previewImages = true;
 
     /**
-     * Wheter or not to add the image processing pluing
+     * Whether or not to add the image processing plugin
      */
     public $imageProcessing = true;
+
+    /**
+     * Whether or not to include our CSS style
+     * @var bool defaults to true
+     */
+    public $registerCSS = true;
 
     /**
      * set to true to auto Uploading Files
@@ -72,7 +78,7 @@ class XUpload extends CJuiInputWidget {
     /**
      * @var bool whether form tag should be used at widget
      */
-    public $showForm = false;
+    public $showForm = true;
 
     /**
      * Publishes the required assets
@@ -134,15 +140,16 @@ class XUpload extends CJuiInputWidget {
     }
 
     /**
-     * Publises and registers the required CSS and Javascript
+     * Publishes and registers the required CSS and Javascript
      * @throws CHttpException if the assets folder was not found
      */
     public function publishAssets() {
         $assets = dirname(__FILE__) . '/assets';
         $baseUrl = Yii::app() -> assetManager -> publish($assets);
         if (is_dir($assets)) {
-            //@ALEXTODO make ui interface optional
-            Yii::app() -> clientScript -> registerCssFile($baseUrl . '/css/jquery.fileupload-ui.css');
+            if($this->registerCSS){
+                Yii::app() -> clientScript -> registerCssFile($baseUrl . '/css/jquery.fileupload-ui.css');
+            }
             //The Templates plugin is included to render the upload/download listings
             Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/tmpl.min.js', CClientScript::POS_END);
             // The basic File Upload plugin
