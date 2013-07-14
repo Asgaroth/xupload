@@ -1,10 +1,14 @@
 <?php
-Yii::import('zii.widgets.jui.CJuiInputWidget');
 /**
  * XUpload extension for Yii.
  *
  * jQuery file upload extension for Yii, allows your users to easily upload files to your server using jquery
  * Its a wrapper of  http://blueimp.github.com/jQuery-File-Upload/
+ *
+ * @author Philipp Frenzel <philipp@frenzel.net>
+ * @link http://blueimp.github.com/jQuery-File-Upload/
+ * @link https://github.com/philippfrenzel/xupload
+ * @version 0.5
  *
  * @author AsgarothBelem <asgaroth.belem@gmail.com>
  * @link http://blueimp.github.com/jQuery-File-Upload/
@@ -12,7 +16,12 @@ Yii::import('zii.widgets.jui.CJuiInputWidget');
  * @version 0.2
  *
  */
-class XUpload extends CJuiInputWidget {
+
+namespace xupload;
+
+use \yii\jui\InputWidget;
+
+class XUpload extends InputWidget {
 
     /**
      * the url to the upload handler
@@ -80,11 +89,16 @@ class XUpload extends CJuiInputWidget {
      */
     public $showForm = true;
 
+    public $options = array();
+
     /**
      * Publishes the required assets
      */
     public function init() {
         parent::init();
+        if (!isset($this->options['id'])) {
+            $this->options['id'] = $this->getId();
+        }
         $this -> publishAssets();
     }
 
@@ -144,6 +158,11 @@ class XUpload extends CJuiInputWidget {
      * @throws CHttpException if the assets folder was not found
      */
     public function publishAssets() {
+        $id = $this->options['id'];
+        //new syntax for asset registration
+        $view = $this->getView();
+        $view->registerAssetBundle("xupload/core");
+
         $assets = dirname(__FILE__) . '/assets';
         $baseUrl = Yii::app() -> assetManager -> publish($assets);
         if (is_dir($assets)) {
