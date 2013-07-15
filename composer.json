@@ -1,4 +1,26 @@
 {
     "name": "philippfrenzel/xupload",
-    "description": "jQuery file upload extension for Yii, allows your users to easily upload files to the server"
+    "description": "jQuery file upload extension for Yii2, allows your users to easily upload files to the server",
+    "authors": [
+		{
+			"name": "AsgarothBelem",
+			"email": "asgaroth.belem@gmail.com",
+			"homepage": "https://github.com/Asgaroth/xupload",
+			"role": "Author Yii 1 Version"
+		},
+		{
+			"name": "Philipp Frenzel",
+			"email": "philipp@frenzel.net",
+			"homepage": "http://www.frenzel.net/",
+			"role": "Port to Yii 2"
+		}
+	],
+	"minimum-stability": "dev",
+	"require": {
+		"yiisoft/yii2": "*",
+		"yiisoft/yii2-jui": "*"
+	},
+	"autoload": {
+		"psr-0": { "xupload\\": "/" }
+	}
 }
