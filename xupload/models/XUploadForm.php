@@ -1,5 +1,11 @@
 <?php
-class XUploadForm extends CFormModel
+
+namespace xupload\models;
+
+use \Yii;
+use \yii\base\Model;
+
+class XUploadForm extends Model
 {
         public $file;
         public $mime_type;

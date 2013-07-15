@@ -19,6 +19,9 @@
 
 namespace xupload;
 
+use \yii;
+use \yii\base\View;
+use \yii\helpers\Json;
 use \yii\jui\InputWidget;
 
 class XUpload extends InputWidget {
@@ -163,57 +166,37 @@ class XUpload extends InputWidget {
         $view = $this->getView();
         $view->registerAssetBundle("xupload/core");
 
-        $assets = dirname(__FILE__) . '/assets';
-        $baseUrl = Yii::app() -> assetManager -> publish($assets);
-        if (is_dir($assets)) {
-            if($this->registerCSS){
-                Yii::app() -> clientScript -> registerCssFile($baseUrl . '/css/jquery.fileupload-ui.css');
-            }
-            //The Templates plugin is included to render the upload/download listings
-            Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/tmpl.min.js', CClientScript::POS_END);
-            // The basic File Upload plugin
-            Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/jquery.fileupload.js', CClientScript::POS_END);
-            if($this->previewImages || $this->imageProcessing){
-                Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/load-image.min.js', CClientScript::POS_END);
-                Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/canvas-to-blob.min.js', CClientScript::POS_END);
-            }
-            //The Iframe Transport is required for browsers without support for XHR file uploads
-            Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/jquery.iframe-transport.js', CClientScript::POS_END);
-            // The File Upload image processing plugin
-            if($this->imageProcessing){
-                Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/jquery.fileupload-ip.js', CClientScript::POS_END);
-            }
-            //The File Upload user interface plugin
-            Yii::app() -> clientScript -> registerScriptFile($baseUrl . '/js/jquery.fileupload-ui.js', CClientScript::POS_END);
+        if($this->previewImages || $this->imageProcessing)
+            $view->registerAssetBundle("xupload/image");
 
-            //The localization script
-            $messages = CJavaScript::encode(array(
-                'fileupload' => array(
-                    'errors' => array(
-                        "maxFileSize" => $this->t('File is too big'),
-                        "minFileSize" => $this->t('File is too small'),
-                        "acceptFileTypes" => $this->t('Filetype not allowed'),
-                        "maxNumberOfFiles" => $this->t('Max number of files exceeded'),
-                        "uploadedBytes" => $this->t('Uploaded bytes exceed file size'),
-                        "emptyResult" => $this->t('Empty file upload result'),
-                    ),
-                    'error' => $this->t('Error'),
-                    'start' => $this->t('Start'),
-                    'cancel' => $this->t('Cancel'),
-                    'destroy' => $this->t('Delete'),
+        if($this->imageProcessing)
+            $view->registerAssetBundle("xupload/imageprocessing");    
+
+        //The localization script
+        $messages = Json::encode(array(
+            'fileupload' => array(
+                'errors' => array(
+                    "maxFileSize" => $this->t('File is too big'),
+                    "minFileSize" => $this->t('File is too small'),
+                    "acceptFileTypes" => $this->t('Filetype not allowed'),
+                    "maxNumberOfFiles" => $this->t('Max number of files exceeded'),
+                    "uploadedBytes" => $this->t('Uploaded bytes exceed file size'),
+                    "emptyResult" => $this->t('Empty file upload result'),
                 ),
-            ));
-            $js = "window.locale = {$messages}";
+                'error' => $this->t('Error'),
+                'start' => $this->t('Start'),
+                'cancel' => $this->t('Cancel'),
+                'destroy' => $this->t('Delete'),
+            ),
+        ));
+        $js = "window.locale = {$messages}";
 
-            Yii::app()->clientScript->registerScript('XuploadI18N', $js, CClientScript::POS_END);
-            /**
-            <!-- The XDomainRequest Transport is included for cross-domain file deletion for IE8+ -->
-            <!--[if gte IE 8]><script src="<?php echo Yii::app()->baseUrl; ?>/js/cors/jquery.xdr-transport.js"></script><![endif]-->
-             *
-             */
-        } else {
-            throw new CHttpException(500, __CLASS__ . ' - Error: Couldn\'t find assets to publish.');
-        }
+        $view->registerJs(implode("\n", $js),View::POS_READY);
+        /**
+        <!-- The XDomainRequest Transport is included for cross-domain file deletion for IE8+ -->
+        <!--[if gte IE 8]><script src="<?php echo Yii::app()->baseUrl; ?>/js/cors/jquery.xdr-transport.js"></script><![endif]-->
+         *
+         */
     }
 
     protected function t($message, $params=array ( ))

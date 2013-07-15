@@ -36,11 +36,19 @@
  *
  * ###Resources
  * - [xupload](http://www.yiiframework.com/extension/xupload)
+ * @version 0.5 (yii2)
+ * @author Philipp (http://www.frenzel.net)
  *
  * @version 0.3
  * @author Asgaroth (http://www.yiiframework.com/user/1883/)
  */
-class XUploadAction extends CAction {
+
+namespace xupload\models;
+
+use \Yii;
+use \yii\base\Action;
+
+class XUploadAction extends Action {
 
     /**
      * XUploadForm (or subclass of it) to be used.  Defaults to XUploadForm
@@ -48,7 +56,7 @@ class XUploadAction extends CAction {
      * @var string
      * @since 0.5
      */
-    public $formClass = 'xupload.models.XUploadForm';
+    public $formClass = '\xupload\models\XUploadForm';
 
     /**
      * Name of the model attribute referring to the uploaded file.
