@@ -22,8 +22,8 @@
  *         return array(
  *             'upload'=>array(
  *                 'class'=>'xupload.actions.XUploadAction',
- *                 'path' =>Yii::app() -> getBasePath() . "/../uploads",
- *                 'publicPath' => Yii::app() -> getBaseUrl() . "/uploads",
+ *                 'path' =>Yii::$app -> getBasePath() . "/../uploads",
+ *                 'publicPath' => Yii::$app -> getBaseUrl() . "/uploads",
  *                 'subfolderVar' => "parent_id",
  *             ),
  *         );
@@ -46,6 +46,8 @@
 namespace xupload\models;
 
 use \Yii;
+use \yii\helpers\Json;
+use \yii\web\UploadedFile;
 use \yii\base\Action;
 
 class XUploadAction extends Action {
@@ -162,25 +164,25 @@ class XUploadAction extends Action {
     public function init( ) {
 
         if( !isset( $this->path ) ) {
-            $this->path = realpath( Yii::app( )->getBasePath( )."/../uploads" );
+            $this->path = realpath( Yii::$app->getBasePath( )."/../uploads" );
         }
 
         if( !is_dir( $this->path ) ) {
             mkdir( $this->path, 0777, true );
             chmod ( $this->path , 0777 );
-            //throw new CHttpException(500, "{$this->path} does not exists.");
+            //throw new new \yii\web\HttpException(500, "{$this->path} does not exists.");
         } else if( !is_writable( $this->path ) ) {
             chmod( $this->path, 0777 );
-            //throw new CHttpException(500, "{$this->path} is not writable.");
+            //throw new new \yii\web\HttpException(500, "{$this->path} is not writable.");
         }
         if( $this->subfolderVar !== null && $this->subfolderVar !== false ) {
-            $this->_subfolder = Yii::app( )->request->getQuery( $this->subfolderVar, date( "mdY" ) );
+            $this->_subfolder = Yii::$app->request->getQuery( $this->subfolderVar, date( "mdY" ) );
         } else if( $this->subfolderVar !== false ) {
             $this->_subfolder = date( "mdY" );
         }
 
         if( !isset($this->_formModel)) {
-            $this->formModel = Yii::createComponent(array('class'=>$this->formClass));
+            $this->formModel = new $this->formClass;
         }
 
         if($this->secureFileNames) {
@@ -216,20 +218,20 @@ class XUploadAction extends Action {
     {
         if (isset($_GET["_method"]) && $_GET["_method"] == "delete") {
             $success = false;
-            if ($_GET["file"][0] !== '.' && Yii::app()->user->hasState($this->stateVariable)) {
+            if ($_GET["file"][0] !== '.' && Yii::$app->user->hasState($this->stateVariable)) {
                 // pull our userFiles array out of state and only allow them to delete
                 // files from within that array
-                $userFiles = Yii::app()->user->getState($this->stateVariable, array());
+                $userFiles = Yii::$app->user->getState($this->stateVariable, array());
 
                 if ($this->fileExists($userFiles[$_GET["file"]])) {
                     $success = $this->deleteFile($userFiles[$_GET["file"]]);
                     if ($success) {
                         unset($userFiles[$_GET["file"]]); // remove it from our session and save that info
-                        Yii::app()->user->setState($this->stateVariable, $userFiles);
+                        Yii::$app->user->setState($this->stateVariable, $userFiles);
                     }
                 }
             }
-            echo json_encode($success);
+            echo Json::encode($success);
             return true;
         }
         return false;
@@ -244,7 +246,7 @@ class XUploadAction extends Action {
     {
         $this->init();
         $model = $this->formModel;
-        $model->{$this->fileAttribute} = CUploadedFile::getInstance($model, $this->fileAttribute);
+        $model->{$this->fileAttribute} = UploadedFile::getInstance($model, $this->fileAttribute);
         if ($model->{$this->fileAttribute} !== null) {
             $model->{$this->mimeTypeAttribute} = $model->{$this->fileAttribute}->getType();
             $model->{$this->sizeAttribute} = $model->{$this->fileAttribute}->getSize();
@@ -265,7 +267,7 @@ class XUploadAction extends Action {
 
                 $returnValue = $this->beforeReturn();
                 if ($returnValue === true) {
-                    echo json_encode(array(array(
+                    echo Json::encode(array(array(
                         "name" => $model->{$this->displayNameAttribute},
                         "type" => $model->{$this->mimeTypeAttribute},
                         "size" => $model->{$this->sizeAttribute},
@@ -278,14 +280,14 @@ class XUploadAction extends Action {
                         "delete_type" => "POST"
                     )));
                 } else {
-                    echo json_encode(array(array("error" => $returnValue,)));
+                    echo Json::encode(array(array("error" => $returnValue,)));
                     Yii::log("XUploadAction: " . $returnValue, CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction");
                 }
             } else {
                 $this->afterValidateError($model);
             }
         } else {
-            throw new CHttpException(500, "Could not upload file");
+            throw new new \yii\web\HttpException(500, "Could not upload file");
         }
     }
 
@@ -300,7 +302,7 @@ class XUploadAction extends Action {
         $path = $this->getPath();
 
         // Now we need to save our file info to the user's session
-        $userFiles = Yii::app( )->user->getState( $this->stateVariable, array());
+        $userFiles = Yii::$app->user->getState( $this->stateVariable, array());
 
         $userFiles[$this->formModel->{$this->fileNameAttribute}] = array(
             "path" => $path.$this->formModel->{$this->fileNameAttribute},
@@ -311,7 +313,7 @@ class XUploadAction extends Action {
             'mime' => $this->formModel->{$this->mimeTypeAttribute},
             'name' => $this->formModel->{$this->displayNameAttribute},
         );
-        Yii::app( )->user->setState( $this->stateVariable, $userFiles );
+        Yii::$app->user->setState( $this->stateVariable, $userFiles );
 
         return true;
     }
@@ -380,7 +382,7 @@ class XUploadAction extends Action {
      * @param $model
      */
     protected function afterValidateError($model) {
-        echo json_encode(array(array("error" => $model->getErrors($this->fileAttribute),)));
-        Yii::log("XUploadAction: " . CVarDumper::dumpAsString($model->getErrors()), CLogger::LEVEL_ERROR, "xupload.actions.XUploadAction");
+        echo Json::encode(array(array("error" => $model->getErrors($this->fileAttribute),)));
+        Yii::log("XUploadAction: " . CVarDumper::dumpAsString($model->getErrors()), CLogger::LEVEL_ERROR, "\xupload\actions\XUploadAction");
     }
 }
