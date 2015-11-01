@@ -81,6 +81,11 @@ class XUpload extends CJuiInputWidget {
     public $showForm = true;
 
     /**
+     * @var bool whether widget should be disabled
+     */
+    public $disabled = false;
+
+    /**
      * Publishes the required assets
      */
     public function init() {
@@ -124,7 +129,10 @@ class XUpload extends CJuiInputWidget {
 
         $options = CJavaScript::encode($this -> options);
 
-        Yii::app() -> clientScript -> registerScript(__CLASS__ . '#' . $this -> htmlOptions['id'], "jQuery('#{$this->htmlOptions['id']}').fileupload({$options});", CClientScript::POS_READY);
+        $script = "jQuery('#{$this->htmlOptions['id']}').fileupload({$options});";
+        if ($this->disabled) $script .= "jQuery('#{$this->htmlOptions['id']}').fileupload('disable');";
+
+        Yii::app() -> clientScript -> registerScript(__CLASS__ . '#' . $this -> htmlOptions['id'], $script, CClientScript::POS_READY);
         $htmlOptions = array();
         if ($this -> multiple) {
             $htmlOptions["multiple"] = true;
