@@ -1,5 +1,7 @@
 # XUpload extension for Yii Framework
 
+# This repository is no longer actively being maintained.  If you're interested in maintaining it, please get in touch via an issue.
+
 ## Yii extension page
 [Extension page](http://www.yiiframework.com/extension/xupload/)
 
