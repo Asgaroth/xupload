@@ -1,5 +1,9 @@
 ##Changelog
 
+#### V 0.5.1 Sun Aug 12 
+- first release for yii2
+- ported by philipp@frenzel.net
+
 #### V 0.4 Mon Jul  2 16:25:53 COT 2012
 - Added image preview assets
 - Added image processing assets
